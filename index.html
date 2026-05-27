@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rental Management</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>Rental Management System</h1>
+
+    <div class="card">
+
+      <h2>Add Tenant</h2>
+
+      <input type="text" id="name" placeholder="Tenant Name">
+      <input type="text" id="phone" placeholder="Phone">
+      <input type="text" id="property" placeholder="Property">
+      <input type="text" id="unit" placeholder="Unit">
+      <input type="number" id="rent" placeholder="Monthly Rent">
+      <input type="date" id="agreementEnd">
+
+      <button onclick="saveTenant()">
+        Save Tenant
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <h2>Tenants</h2>
+
+      <div id="tenantList"></div>
+
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
