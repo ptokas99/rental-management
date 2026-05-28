@@ -1,31 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rental Management</title>
+
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <div class="container">
 
-    <h1>Rental Management System</h1>
+    <!-- FORM CARD -->
 
     <div class="card">
 
-      <h2>Add Tenant</h2>
+      <h2 id="formTitle">Add Tenant</h2>
 
-      <input type="text" id="name" placeholder="Tenant Name">
-      <input type="text" id="phone" placeholder="Phone">
-      <input type="text" id="property" placeholder="Property">
-      <input type="text" id="unit" placeholder="Unit">
-      <input type="number" id="rent" placeholder="Monthly Rent">
-      <input type="date" id="agreementEnd">
+      <input type="hidden" id="tenantId">
 
-      <button onclick="saveTenant()">
-        Save Tenant
-      </button>
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Property</label>
+          <select id="property">
+            <option value="">Select Property</option>
+          
+            <option value="J-128">J-128</option>
+            <option value="C-127">C-127</option>
+            <option value="G-128">G-128</option>
+            <option value="Ganpati Bhawan">Ganpati Bhawan</option>
+            <option value="E-131">E-131</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Flat No</label>
+          <input type="text" id="flatNo" placeholder="Enter flat no">
+        </div>
+
+        <div class="form-group">
+          <label>Tenant</label>
+          <input type="text" id="tenant" placeholder="Enter tenant name">
+        </div>
+
+        <div class="form-group">
+          <label>Rent</label>
+          <input type="number" id="rent" placeholder="Enter rent">
+        </div>
+
+        <div class="form-group">
+          <label>Advance</label>
+          <input type="number" id="advance" value="0">
+        </div>
+
+        <div class="form-group">
+          <label>Security</label>
+          <input type="number" id="security" value="0">
+        </div>
+
+        <div class="form-group">
+          <label>Water</label>
+          <input type="number" id="water" value="0">
+        </div>
+
+        <div class="form-group">
+          <label>Maintenance</label>
+          <input type="number" id="maintenance" value="0">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Electricity</label>
+
+          <select
+            id="electricityType"
+            onchange="toggleElectricityUnit()"
+          >
+            <option value="Paid by tenant directly">
+              Paid by tenant directly
+            </option>
+
+            <option value="Paid by tenant per unit charge">
+              Paid by tenant per unit charge
+            </option>
+          </select>
+        </div>
+
+        <div
+          class="form-group full-width"
+          id="electricityUnitBox"
+          style="display:none;"
+        >
+          <label>Electricity Per Unit Charge</label>
+
+          <input
+            type="number"
+            id="electricityUnitCharge"
+            placeholder="Enter per unit charge"
+          >
+        </div>
+
+        <div class="form-group full-width">
+          <label>Rent Agreement Due Date</label>
+
+          <input
+            type="date"
+            id="rentAgreementDueDate"
+          >
+        </div>
+
+        <!-- DOCUMENTS -->
+
+        <div class="form-group">
+          <label>Aadhar Document</label>
+
+          <input
+            type="file"
+            id="aadharDocument"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Rent Agreement Document</label>
+
+          <input
+            type="file"
+            id="rentAgreementDocument"
+          >
+        </div>
+
+        <div class="form-group full-width">
+          <label>Police Verification Document</label>
+
+          <input
+            type="file"
+            id="policeVerificationDocument"
+          >
+        </div>
+
+      </div>
+
+      <div class="button-row">
+
+        <button onclick="saveTenant()">
+          Save Tenant
+        </button>
+
+        <button
+          onclick="clearForm()"
+          class="secondary"
+        >
+          Clear
+        </button>
+
+      </div>
 
     </div>
+
+    <!-- TENANT LIST -->
 
     <div class="card">
 
@@ -40,4 +174,5 @@
   <script src="script.js"></script>
 
 </body>
+
 </html>
