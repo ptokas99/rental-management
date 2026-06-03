@@ -165,3 +165,73 @@ a {
     flex-direction: column;
   }
 }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.total-card {
+  background: linear-gradient(135deg, #111827, #1f2937);
+  color: white;
+  padding: 30px;
+  border-radius: 22px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.total-card h2 {
+  font-size: 20px;
+  opacity: 0.9;
+}
+
+.total-card h1 {
+  font-size: 42px;
+  margin: 10px 0 0;
+}
+
+.property-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+.property-card h3 {
+  margin-top: 0;
+  font-size: 22px;
+  color: #111827;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+  font-size: 15px;
+}
+
+.stat-row strong {
+  color: #374151;
+}
+
+.collection-badge {
+  margin-top: 16px;
+  padding: 14px;
+  background: #ecfdf5;
+  color: #047857;
+  border-radius: 12px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 18px;
+}
+
+.agreement-btn {
+  background: #059669;
+}
+
+.agreement-btn:hover {
+  background: #047857;
+}
