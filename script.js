@@ -4,6 +4,7 @@ let tenants = [];
 
 window.onload = function () {
   resetActionView();
+  loadDashboard();
 };
 
 async function saveTenant() {
@@ -123,7 +124,15 @@ function renderTenants() {
         <p><strong>Agreement Due:</strong> ${tenant.rentAgreementDueDate || "N/A"}</p>
 
         <div class="action-buttons">
+
           ${actionButton}
+
+          <button
+            class="agreement-btn"
+            onclick="generateAgreement('${tenant.id}')">
+            Generate Agreement
+          </button>
+
         </div>
       </div>
     `;
@@ -288,4 +297,140 @@ function showDeleteTenants() {
   document.getElementById("tenantListTitle").innerText = "Select Tenant to Delete";
 
   loadTenantsByProperty(property);
+}
+
+async function loadDashboard() {
+  const response = await fetch(GOOGLE_SCRIPT_URL);
+  const allTenants = await response.json();
+
+  const propertyTotals = {};
+
+  allTenants.forEach((tenant) => {
+
+    const property = tenant.property || "Unknown Property";
+
+    const monthlyCollection =
+      Number(tenant.rent || 0) +
+      Number(tenant.water || 0) +
+      Number(tenant.maintenance || 0);
+
+    if (!propertyTotals[property]) {
+      propertyTotals[property] = {
+        totalCollection: 0,
+        totalRent: 0,
+        totalWater: 0,
+        totalMaintenance: 0,
+        tenantCount: 0
+      };
+    }
+
+    propertyTotals[property].totalCollection += monthlyCollection;
+    propertyTotals[property].totalRent += Number(tenant.rent || 0);
+    propertyTotals[property].totalWater += Number(tenant.water || 0);
+    propertyTotals[property].totalMaintenance += Number(tenant.maintenance || 0);
+    propertyTotals[property].tenantCount += 1;
+  });
+
+  renderDashboard(propertyTotals);
+}
+
+function renderDashboard(propertyTotals) {
+  const dashboard = document.getElementById("dashboardList");
+  dashboard.innerHTML = "";
+
+  let grandTotal = 0;
+
+  Object.keys(propertyTotals).forEach((property) => {
+    grandTotal += propertyTotals[property].totalCollection;
+  });
+
+  dashboard.innerHTML = `
+    <div class="total-card">
+      <h2>Total Monthly Collection</h2>
+      <h1>₹${grandTotal.toLocaleString("en-IN")}</h1>
+    </div>
+
+    <div class="dashboard-grid">
+      ${Object.keys(propertyTotals).map((property) => `
+        <div class="property-card">
+          <h3>${property}</h3>
+
+          <div class="stat-row">
+            <strong>Tenants</strong>
+            <span>${propertyTotals[property].tenantCount}</span>
+          </div>
+
+          <div class="stat-row">
+            <strong>Rent</strong>
+            <span>₹${propertyTotals[property].totalRent.toLocaleString("en-IN")}</span>
+          </div>
+
+          <div class="stat-row">
+            <strong>Water</strong>
+            <span>₹${propertyTotals[property].totalWater.toLocaleString("en-IN")}</span>
+          </div>
+
+          <div class="stat-row">
+            <strong>Maintenance</strong>
+            <span>₹${propertyTotals[property].totalMaintenance.toLocaleString("en-IN")}</span>
+          </div>
+
+          <div class="collection-badge">
+            ₹${propertyTotals[property].totalCollection.toLocaleString("en-IN")} / month
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+async function generateAgreement(id) {
+  const confirmGenerate = confirm("Generate rent agreement for this tenant?");
+
+  if (!confirmGenerate) return;
+
+  const ownerName = prompt("Enter Owner / Lessor Name:");
+  if (!ownerName) return;
+
+  const ownerAddress = prompt("Enter Owner / Lessor Address:");
+  if (!ownerAddress) return;
+
+  const ownerAadhaar = prompt("Enter Owner Aadhaar:");
+  if (!ownerAadhaar) return;
+
+  const tenantAddress = prompt("Enter Tenant / Lessee Address:");
+  const tenantAadhaar = prompt("Enter Tenant Aadhaar:");
+
+  const propertyAddress = prompt(
+    "Enter complete rented property address:\nExample: J-128, Third Floor Flat No. 303, Mohammad Pur, RK Puram, New Delhi - 110066"
+  );
+  if (!propertyAddress) return;
+
+  const startDate = prompt("Enter Agreement Start Date:\nExample: 01/01/2026");
+  if (!startDate) return;
+
+  const fixtures = prompt(
+    "Enter Fixtures & Fittings:\nExample: Geyser, Refrigerator, Almirah\nLeave blank if none."
+  );
+
+  await sendToGoogleSheets({
+    action: "generateAgreement",
+    id: id,
+    ownerName: ownerName,
+    ownerAddress: ownerAddress,
+    ownerAadhaar: ownerAadhaar,
+    tenantAddress: tenantAddress || "",
+    tenantAadhaar: tenantAadhaar || "",
+    propertyAddress: propertyAddress,
+    startDate: startDate,
+    fixtures: fixtures || ""
+  });
+
+  alert("Rent agreement generated. Please refresh tenants after a few seconds.");
+
+  const selectedProperty = document.getElementById("selectedProperty").value;
+
+  if (selectedProperty) {
+    loadTenantsByProperty(selectedProperty);
+  }
 }
