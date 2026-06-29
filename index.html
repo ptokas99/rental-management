@@ -78,6 +78,11 @@
         </div>
 
         <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="text" id="mobile" placeholder="Enter tenant mobile number">
+        </div>
+
+        <div class="form-group">
           <label>Rent</label>
           <input type="number" id="rent" placeholder="Enter rent">
         </div>
@@ -190,6 +195,16 @@
             <input type="checkbox" id="removePoliceVerification">
             Remove existing Police Verification document
           </label>
+        </div>
+
+        <div class="form-group full-width" id="documentStatusBox" style="display:none;">
+          <label>Existing Document Status</label>
+        
+          <div class="doc-status-row">
+            <span id="aadharStatus" class="doc-status">Aadhar: Not checked</span>
+            <span id="rentAgreementStatus" class="doc-status">Rent Agreement: Not checked</span>
+            <span id="policeStatus" class="doc-status">Police Verification: Not checked</span>
+          </div>
         </div>
 
       </div>
