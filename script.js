@@ -8,6 +8,12 @@ window.onload = function () {
 };
 
 async function saveTenant() {
+  const property = document.getElementById("property").value;
+
+  if (!property) {
+    alert("Please select a property before adding a tenant.");
+    return;
+  }
   const tenantId = document.getElementById("tenantId").value;
 
   const aadharFile = document.getElementById("aadharDocument").files[0];
@@ -21,6 +27,7 @@ async function saveTenant() {
     property: document.getElementById("property").value,
     flatNo: document.getElementById("flatNo").value,
     tenant: document.getElementById("tenant").value,
+    mobile: document.getElementById("mobile").value,
     rent: document.getElementById("rent").value,
     advance: document.getElementById("advance").value || 0,
     security: document.getElementById("security").value || 0,
@@ -122,6 +129,7 @@ function renderTenants() {
         <p><strong>Flat No:</strong> ${tenant.flatNo}</p>
         <p><strong>Rent:</strong> ₹${tenant.rent}</p>
         <p><strong>Agreement Due:</strong> ${tenant.rentAgreementDueDate || "N/A"}</p>
+        <p><strong>Mobile:</strong> ${tenant.mobile || "N/A"}</p>
 
         <div class="action-buttons">
 
@@ -146,6 +154,7 @@ function editTenant(id) {
   document.getElementById("property").value = tenant.property;
   document.getElementById("flatNo").value = tenant.flatNo;
   document.getElementById("tenant").value = tenant.tenant;
+  document.getElementById("mobile").value = tenant.mobile || "";
   document.getElementById("rent").value = tenant.rent;
   document.getElementById("advance").value = tenant.advance || 0;
   document.getElementById("security").value = tenant.security || 0;
@@ -160,6 +169,7 @@ function editTenant(id) {
   document.getElementById("formTitle").innerText = "Edit Tenant";
 
   document.getElementById("formTitle").innerText = "Edit Tenant";
+  updateDocumentStatus(tenant);
   toggleElectricityUnit();
   window.scrollTo(0, 0);
 }
@@ -215,6 +225,7 @@ function clearForm() {
   document.getElementById("removeAadhar").checked = false;
   document.getElementById("removeRentAgreement").checked = false;
   document.getElementById("removePoliceVerification").checked = false;
+  document.getElementById("documentStatusBox").style.display = "none";
 
   toggleElectricityUnit();
 }
@@ -306,13 +317,15 @@ async function loadDashboard() {
   const propertyTotals = {};
 
   allTenants.forEach((tenant) => {
+    if (!tenant.tenant || !tenant.property) return;
 
-    const property = tenant.property || "Unknown Property";
+    const property = tenant.property;
 
-    const monthlyCollection =
-      Number(tenant.rent || 0) +
-      Number(tenant.water || 0) +
-      Number(tenant.maintenance || 0);
+    const rent = Number(tenant.rent) || 0;
+    const water = Number(tenant.water) || 0;
+    const maintenance = Number(tenant.maintenance) || 0;
+
+    const monthlyCollection = rent + water + maintenance;
 
     if (!propertyTotals[property]) {
       propertyTotals[property] = {
@@ -325,9 +338,9 @@ async function loadDashboard() {
     }
 
     propertyTotals[property].totalCollection += monthlyCollection;
-    propertyTotals[property].totalRent += Number(tenant.rent || 0);
-    propertyTotals[property].totalWater += Number(tenant.water || 0);
-    propertyTotals[property].totalMaintenance += Number(tenant.maintenance || 0);
+    propertyTotals[property].totalRent += rent;
+    propertyTotals[property].totalWater += water;
+    propertyTotals[property].totalMaintenance += maintenance;
     propertyTotals[property].tenantCount += 1;
   });
 
@@ -432,5 +445,39 @@ async function generateAgreement(id) {
 
   if (selectedProperty) {
     loadTenantsByProperty(selectedProperty);
+  }
+}
+
+function updateDocumentStatus(tenant) {
+  document.getElementById("documentStatusBox").style.display = "block";
+
+  setDocumentStatus(
+    "aadharStatus",
+    "Aadhar",
+    tenant.aadharLink
+  );
+
+  setDocumentStatus(
+    "rentAgreementStatus",
+    "Rent Agreement",
+    tenant.rentAgreementLink
+  );
+
+  setDocumentStatus(
+    "policeStatus",
+    "Police Verification",
+    tenant.policeVerificationLink
+  );
+}
+
+function setDocumentStatus(elementId, label, link) {
+  const element = document.getElementById(elementId);
+
+  if (link) {
+    element.innerHTML = `${label}: Present ✅`;
+    element.className = "doc-status doc-present";
+  } else {
+    element.innerHTML = `${label}: Missing ❌`;
+    element.className = "doc-status doc-missing";
   }
 }
