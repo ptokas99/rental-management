@@ -28,6 +28,7 @@ async function saveTenant() {
     flatNo: document.getElementById("flatNo").value,
     tenant: document.getElementById("tenant").value,
     mobile: document.getElementById("mobile").value,
+    tenantType: document.getElementById("tenantType").value,
     rent: document.getElementById("rent").value,
     advance: document.getElementById("advance").value || 0,
     security: document.getElementById("security").value || 0,
@@ -130,6 +131,7 @@ function renderTenants() {
         <p><strong>Rent:</strong> ₹${tenant.rent}</p>
         <p><strong>Agreement Due:</strong> ${tenant.rentAgreementDueDate || "N/A"}</p>
         <p><strong>Mobile:</strong> ${tenant.mobile || "N/A"}</p>
+        <p><strong>Tenant Type:</strong> ${tenant.tenantType || "Residential"}</p>
 
         <div class="action-buttons">
 
@@ -155,6 +157,7 @@ function editTenant(id) {
   document.getElementById("flatNo").value = tenant.flatNo;
   document.getElementById("tenant").value = tenant.tenant;
   document.getElementById("mobile").value = tenant.mobile || "";
+  document.getElementById("tenantType").value = tenant.tenantType || "Residential";
   document.getElementById("rent").value = tenant.rent;
   document.getElementById("advance").value = tenant.advance || 0;
   document.getElementById("security").value = tenant.security || 0;
@@ -226,6 +229,7 @@ function clearForm() {
   document.getElementById("removeRentAgreement").checked = false;
   document.getElementById("removePoliceVerification").checked = false;
   document.getElementById("documentStatusBox").style.display = "none";
+  document.getElementById("tenantType").value = "Residential";
 
   toggleElectricityUnit();
 }
@@ -402,6 +406,8 @@ async function generateAgreement(id) {
 
   if (!confirmGenerate) return;
 
+  const tenant = tenants.find(t => String(t.id) === String(id));
+
   const ownerName = prompt("Enter Owner / Lessor Name:");
   if (!ownerName) return;
 
@@ -426,6 +432,56 @@ async function generateAgreement(id) {
     "Enter Fixtures & Fittings:\nExample: Geyser, Refrigerator, Almirah\nLeave blank if none."
   );
 
+  let businessUse = "";
+
+  if (tenant.tenantType === "Commercial") {
+    businessUse = prompt(
+      "Enter Business Use Number:\n\n" +
+      "1. Office\n" +
+      "2. Consultancy Office\n" +
+      "3. Retail Shop\n" +
+      "4. Boutique\n" +
+      "5. Medical Clinic\n" +
+      "6. Dental Clinic\n" +
+      "7. Salon & Spa\n" +
+      "8. Restaurant / Café\n" +
+      "9. Warehouse\n" +
+      "10. Coaching Institute\n" +
+      "11. Pharmacy\n" +
+      "12. Electronics Store\n" +
+      "13. Other"
+    );
+  
+    const businessOptions = {
+      "1": "Office",
+      "2": "Consultancy Office",
+      "3": "Retail Shop",
+      "4": "Boutique",
+      "5": "Medical Clinic",
+      "6": "Dental Clinic",
+      "7": "Salon & Spa",
+      "8": "Restaurant / Café",
+      "9": "Warehouse",
+      "10": "Coaching Institute",
+      "11": "Pharmacy",
+      "12": "Electronics Store"
+    };
+  
+    if (businessUse === "13") {
+      businessUse = prompt("Enter custom business use:");
+    } else {
+      businessUse = businessOptions[businessUse];
+    }
+  
+    if (!businessUse) {
+      alert("Business use is required for commercial agreement.");
+      return;
+    }
+  }
+
+  console.log("Tenant type:", tenant.tenantType);
+  console.log("Business Use:", businessUse);
+
   await sendToGoogleSheets({
     action: "generateAgreement",
     id: id,
@@ -436,7 +492,8 @@ async function generateAgreement(id) {
     tenantAadhaar: tenantAadhaar || "",
     propertyAddress: propertyAddress,
     startDate: startDate,
-    fixtures: fixtures || ""
+    fixtures: fixtures || "",
+    businessUse: businessUse
   });
 
   alert("Rent agreement generated. Please refresh tenants after a few seconds.");
