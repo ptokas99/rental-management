@@ -15,7 +15,7 @@ async function saveTenant() {
     return;
   }
   const tenantId = document.getElementById("tenantId").value;
-
+  
   const aadharFile = document.getElementById("aadharDocument").files[0];
   const rentAgreementFile = document.getElementById("rentAgreementDocument").files[0];
   const policeFile = document.getElementById("policeVerificationDocument").files[0];
@@ -129,6 +129,7 @@ function renderTenants() {
         <p><strong>Property:</strong> ${tenant.property}</p>
         <p><strong>Flat No:</strong> ${tenant.flatNo}</p>
         <p><strong>Rent:</strong> ₹${tenant.rent}</p>
+        <p><strong>Onboarded:</strong> ${calculateOnboardedDate(tenant.rentAgreementDueDate)}</p>
         <p><strong>Agreement Due:</strong> ${tenant.rentAgreementDueDate || "N/A"}</p>
         <p><strong>Mobile:</strong> ${tenant.mobile || "N/A"}</p>
         <p><strong>Tenant Type:</strong> ${tenant.tenantType || "Residential"}</p>
@@ -147,6 +148,15 @@ function renderTenants() {
       </div>
     `;
   });
+}
+
+function calculateOnboardedDate(dueDate) {
+  if (!dueDate) return "N/A";
+
+  const date = new Date(dueDate);
+  date.setMonth(date.getMonth() - 11);
+
+  return date.toLocaleDateString("en-IN");
 }
 
 function editTenant(id) {
