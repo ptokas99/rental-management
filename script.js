@@ -15,7 +15,7 @@ async function saveTenant() {
     return;
   }
   const tenantId = document.getElementById("tenantId").value;
-  
+
   const aadharFile = document.getElementById("aadharDocument").files[0];
   const rentAgreementFile = document.getElementById("rentAgreementDocument").files[0];
   const policeFile = document.getElementById("policeVerificationDocument").files[0];
@@ -30,6 +30,7 @@ async function saveTenant() {
     mobile: document.getElementById("mobile").value,
     tenantType: document.getElementById("tenantType").value,
     rent: document.getElementById("rent").value,
+    rentDueDay: document.getElementById("rentDueDay").value,
     advance: document.getElementById("advance").value || 0,
     security: document.getElementById("security").value || 0,
     water: document.getElementById("water").value || 0,
@@ -129,6 +130,7 @@ function renderTenants() {
         <p><strong>Property:</strong> ${tenant.property}</p>
         <p><strong>Flat No:</strong> ${tenant.flatNo}</p>
         <p><strong>Rent:</strong> ₹${tenant.rent}</p>
+        <p><strong>Rent Due:</strong> ${tenant.rentDueDay ? tenant.rentDueDay + getDaySuffix(tenant.rentDueDay) + " of every month" : "Not set"}</p>
         <p><strong>Onboarded:</strong> ${calculateOnboardedDate(tenant.rentAgreementDueDate)}</p>
         <p><strong>Agreement Due:</strong> ${tenant.rentAgreementDueDate || "N/A"}</p>
         <p><strong>Mobile:</strong> ${tenant.mobile || "N/A"}</p>
@@ -137,6 +139,18 @@ function renderTenants() {
         <div class="action-buttons">
 
           ${actionButton}
+
+          <button
+            class="reminder-btn"
+            onclick="activateRentReminder('${tenant.id}')">
+            🔔 Send Reminder
+          </button>
+
+          <button
+            class="paid-btn"
+            onclick="stopRentReminder('${tenant.id}')">
+            ✓ Mark Paid
+          </button>
 
           <button
             class="agreement-btn"
@@ -162,6 +176,8 @@ function calculateOnboardedDate(dueDate) {
 function editTenant(id) {
   const tenant = tenants.find(t => String(t.id) === String(id));
 
+  console.log("TENANT RECEIVED FOR EDIT:", tenant);
+
   document.getElementById("tenantId").value = tenant.id;
   document.getElementById("property").value = tenant.property;
   document.getElementById("flatNo").value = tenant.flatNo;
@@ -169,6 +185,7 @@ function editTenant(id) {
   document.getElementById("mobile").value = tenant.mobile || "";
   document.getElementById("tenantType").value = tenant.tenantType || "Residential";
   document.getElementById("rent").value = tenant.rent;
+  document.getElementById("rentDueDay").value = tenant.rentDueDay || "";
   document.getElementById("advance").value = tenant.advance || 0;
   document.getElementById("security").value = tenant.security || 0;
   document.getElementById("water").value = tenant.water || 0;
@@ -226,6 +243,7 @@ function clearForm() {
   document.getElementById("flatNo").value = "";
   document.getElementById("tenant").value = "";
   document.getElementById("rent").value = "";
+  document.getElementById("rentDueDay").value = "";
   document.getElementById("advance").value = "0";
   document.getElementById("security").value = "0";
   document.getElementById("water").value = "0";
@@ -547,4 +565,70 @@ function setDocumentStatus(elementId, label, link) {
     element.innerHTML = `${label}: Missing ❌`;
     element.className = "doc-status doc-missing";
   }
+}
+
+function getDaySuffix(day) {
+  const n = Number(day);
+
+  if (n >= 11 && n <= 13) {
+    return "th";
+  }
+
+  switch (n % 10) {
+    case 1: return "st";
+    case 2: return "nd";
+    case 3: return "rd";
+    default: return "th";
+  }
+}
+
+async function activateRentReminder(id) {
+  const tenant = tenants.find(
+    t => String(t.id) === String(id)
+  );
+
+  if (!tenant) {
+    alert("Tenant not found.");
+    return;
+  }
+
+  await sendToGoogleSheets({
+    action: "setRentStatus",
+    id: tenant.id,
+    tenant: tenant.tenant,
+    property: tenant.property,
+    flatNo: tenant.flatNo,
+    status: "Not Paid"
+  });
+
+  alert(
+    "Reminder activated for " +
+    tenant.tenant +
+    " for the current month."
+  );
+}
+
+async function stopRentReminder(id) {
+  const tenant = tenants.find(
+    t => String(t.id) === String(id)
+  );
+
+  if (!tenant) {
+    alert("Tenant not found.");
+    return;
+  }
+
+  await sendToGoogleSheets({
+    action: "setRentStatus",
+    id: tenant.id,
+    tenant: tenant.tenant,
+    property: tenant.property,
+    flatNo: tenant.flatNo,
+    status: "Paid"
+  });
+
+  alert(
+    tenant.tenant +
+    " marked as paid for the current month. Reminders stopped."
+  );
 }
