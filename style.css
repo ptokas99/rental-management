@@ -261,3 +261,21 @@ a {
   color: #991b1b;
   border: 1px solid #fca5a5;
 }
+
+.reminder-btn {
+  background: #f59e0b;
+  color: white;
+}
+
+.reminder-btn:hover {
+  background: #d97706;
+}
+
+.paid-btn {
+  background: #16a34a;
+  color: white;
+}
+
+.paid-btn:hover {
+  background: #15803d;
+}
