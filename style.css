@@ -279,3 +279,21 @@ a {
 .paid-btn:hover {
   background: #15803d;
 }
+
+.welcome-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.welcome-btn:hover {
+  background: #1d4ed8;
+}
+
+.message-status {
+  margin: 12px 0;
+  padding: 10px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.8;
+}
