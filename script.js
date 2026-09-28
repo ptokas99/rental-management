@@ -37,6 +37,7 @@ async function saveTenant() {
     maintenance: document.getElementById("maintenance").value || 0,
     electricityType: document.getElementById("electricityType").value,
     electricityUnitCharge: document.getElementById("electricityUnitCharge").value || "",
+    electricityCaNumber: document.getElementById("electricityCaNumber").value.trim(),
     rentAgreementDueDate: document.getElementById("rentAgreementDueDate").value,
 
     aadharBase64: await fileToBase64(aadharFile),
@@ -136,6 +137,31 @@ function renderTenants() {
         <p><strong>Mobile:</strong> ${tenant.mobile || "N/A"}</p>
         <p><strong>Tenant Type:</strong> ${tenant.tenantType || "Residential"}</p>
 
+        <div class="message-status">
+
+  <div>
+    👋 <strong>Welcome:</strong>
+    ${formatWhatsAppStatus(
+      tenant.messageStatus?.tenant_onboarding
+    )}
+  </div>
+
+  <div>
+    🔔 <strong>Rent:</strong>
+    ${formatWhatsAppStatus(
+      tenant.messageStatus?.rent_due_reminder
+    )}
+  </div>
+
+  <div>
+    ⚡ <strong>Electricity:</strong>
+    ${formatWhatsAppStatus(
+      tenant.messageStatus?.electricity_bill_reminder
+    )}
+  </div>
+
+</div>
+
         <div class="action-buttons">
 
           ${actionButton}
@@ -156,6 +182,12 @@ function renderTenants() {
             class="agreement-btn"
             onclick="generateAgreement('${tenant.id}')">
             Generate Agreement
+          </button>
+
+          <button
+            class="welcome-btn"
+            onclick="sendOnboardingMessage('${tenant.id}')">
+            👋 Send Welcome Message
           </button>
 
         </div>
@@ -191,6 +223,7 @@ function editTenant(id) {
   document.getElementById("water").value = tenant.water || 0;
   document.getElementById("maintenance").value = tenant.maintenance || 0;
   document.getElementById("electricityType").value = tenant.electricityType || "Paid by tenant directly";
+  document.getElementById("electricityCaNumber").value = tenant.electricityCaNumber || "";
   document.getElementById("electricityUnitCharge").value = tenant.electricityUnitCharge || "";
   document.getElementById("rentAgreementDueDate").value = tenant.rentAgreementDueDate || "";
   document.getElementById("tenantFormCard").style.display = "block";
@@ -258,6 +291,7 @@ function clearForm() {
   document.getElementById("removePoliceVerification").checked = false;
   document.getElementById("documentStatusBox").style.display = "none";
   document.getElementById("tenantType").value = "Residential";
+  document.getElementById("electricityCaNumber").value = "";
 
   toggleElectricityUnit();
 }
@@ -631,4 +665,65 @@ async function stopRentReminder(id) {
     tenant.tenant +
     " marked as paid for the current month. Reminders stopped."
   );
+}
+
+async function sendOnboardingMessage(id) {
+  const tenant = tenants.find(
+    t => String(t.id) === String(id)
+  );
+
+  if (!tenant) {
+    alert("Tenant not found.");
+    return;
+  }
+
+  const confirmed = confirm(
+    "Send welcome message to " +
+    tenant.tenant +
+    "?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  await sendToGoogleSheets({
+    action: "sendOnboardingMessage",
+    id: tenant.id,
+    tenant: tenant.tenant,
+    property: tenant.property,
+    flatNo: tenant.flatNo,
+    mobile: tenant.mobile
+  });
+
+  alert(
+    "Welcome message sent to " +
+    tenant.tenant +
+    "."
+  );
+}
+
+function formatWhatsAppStatus(status) {
+  const value =
+    String(status || "").toLowerCase();
+
+  switch (value) {
+    case "api accepted":
+      return "Accepted";
+
+    case "sent":
+      return "Sent ✓";
+
+    case "delivered":
+      return "Delivered ✓✓";
+
+    case "read":
+      return "Read ✓✓";
+
+    case "failed":
+      return "Failed ❌";
+
+    default:
+      return "Not sent";
+  }
 }
