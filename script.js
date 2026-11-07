@@ -727,3 +727,111 @@ function formatWhatsAppStatus(status) {
       return "Not sent";
   }
 }
+
+async function openFestivalGreetingPopup() {
+  const input = prompt(
+    "🎉 Enter Festival Name:\n\nExample: Diwali, Holi, Christmas"
+  );
+
+  if (input === null) return;
+
+  const festivalName = input.trim();
+
+  if (!festivalName || festivalName.length > 100) {
+    alert("Please enter a valid festival name.");
+    return;
+  }
+
+  try {
+    const previewUrl = new URL(GOOGLE_SCRIPT_URL);
+
+    previewUrl.searchParams.set(
+      "action",
+      "festivalGreetingPreview"
+    );
+
+    previewUrl.searchParams.set(
+      "festivalName",
+      festivalName
+    );
+
+    const response = await fetch(previewUrl.toString());
+
+    if (!response.ok) {
+      throw new Error("Unable to load festival preview.");
+    }
+
+    const preview = await response.json();
+
+    if (!preview.success) {
+      throw new Error(preview.error || "Preview failed.");
+    }
+
+    const confirmed = confirm(
+      "🎉 FESTIVAL GREETING PREVIEW\n\n" +
+      "Festival: " + preview.festivalName + "\n" +
+      "Total tenant records: " + preview.tenantRecords + "\n" +
+      "Unique valid numbers: " + preview.uniqueValidNumbers + "\n" +
+      "Duplicate numbers: " + preview.duplicateNumbers + "\n" +
+      "Invalid numbers: " + preview.invalidNumbers + "\n" +
+      "Previously attempted: " + preview.previouslyAttempted + "\n\n" +
+      "ELIGIBLE RECIPIENTS: " + preview.eligibleRecipients + "\n\n" +
+      "Click OK to send WhatsApp greetings.\n" +
+      "Click Cancel to stop."
+    );
+
+    if (!confirmed) return;
+
+    if (preview.eligibleRecipients === 0) {
+      alert("No eligible recipients remain for this festival.");
+      return;
+    }
+
+    const sendUrl = new URL(GOOGLE_SCRIPT_URL);
+
+    sendUrl.searchParams.set(
+      "action",
+      "sendFestivalGreeting"
+    );
+
+    sendUrl.searchParams.set(
+      "festivalName",
+      festivalName
+    );
+
+    alert(
+      "Sending festival greetings now.\n\n" +
+      "Please keep this page open."
+    );
+
+    const sendResponse = await fetch(sendUrl.toString());
+
+    if (!sendResponse.ok) {
+      throw new Error("Unable to complete the sending request.");
+    }
+
+    const result = await sendResponse.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Sending failed.");
+    }
+
+    alert(
+      "🎉 FESTIVAL GREETING RESULT\n\n" +
+      "Festival: " + result.festivalName + "\n" +
+      "Processed: " + result.processed + "\n" +
+      "API Accepted: " + result.apiAccepted + "\n" +
+      "Errors / Unconfirmed: " + result.errorsOrUnconfirmed + "\n\n" +
+      "Check Festival Greeting Log for details."
+    );
+
+  } catch (error) {
+    console.error("Festival Greeting Error:", error);
+
+    alert(
+      "Festival Greeting Error:\n\n" +
+      error.message +
+      "\n\nCheck Festival Greeting Log before retrying."
+    );
+  }
+}
